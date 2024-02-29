@@ -8,6 +8,7 @@ from pygame.locals import *
 import time
 import random
 from mpi4py import MPI
+from pygame import mixer
 
 # simple thing that can move around
 class Thing:
@@ -119,7 +120,7 @@ universe_size = (width*2, height*2)
 yspeed = 20
 xspeed = 12
 stars = []
-for i in range(100):
+for i in range(80):
     x = random.randint(1, (width - 1) * 2)
     y = random.randint(1, (height - 1) * 2)
     stars.append(Star(x, y, xspeed, yspeed))
@@ -136,6 +137,14 @@ bg_image3 = pygame.image.load('sky003.jpg')
 bg_image3 = pygame.transform.scale(bg_image3, (width, height))
 bg_image4 = pygame.image.load('sky004.jpg')
 bg_image4 = pygame.transform.scale(bg_image4, (width, height))
+
+#music set up
+if rank == 0:
+    mixer.init()
+    mixer.music.load('skyMusic.mp3')
+    print("music started playing")
+    mixer.music.set_volume(0.2)
+    mixer.music.play()
 
 # this is a function that will run the red dot
 def run_it(stars):
@@ -195,7 +204,7 @@ def run_it(stars):
                 star.draw(screen, width, height)
         #    star.move()
         pygame.display.update()
-        clock.tick(30)
+        clock.tick(60)
 
 while True:
     run_it(stars)
