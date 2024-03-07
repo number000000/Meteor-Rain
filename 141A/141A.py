@@ -91,6 +91,38 @@ class Star(object):
     def draw(self, screen, offset_x, offset_y):
         pygame.draw.circle(screen, self.color, (self.x - offset_x, self.y - offset_y), self.size, 0)
 
+class BigStar(object):
+    color = (0, 0, 0)
+    move = 0
+    xspeed = 1
+    yspeed = 1
+    star_points  = [ (195, 171), (200, 120), (205, 171), (271, 174), (197, 179),
+                 (200, 236), (203, 179), (129, 174)]
+
+    def __init__(self, xspeed, yspeed):
+        self.color = (255, 255, random.randint(130, 255))
+        self.size = random.randint(1, 7)
+        self.xspeed = xspeed
+        self.yspeed = yspeed
+
+    def move(self):
+        if(self.move):
+            if self.star_points[7][0] >= (width * 2):
+                self.move = 0
+            elif (self.star_points[1][1]  >= (height * 2)):
+                self.move = 0
+            else:
+                for i in range(len(self.star_points)):
+                    self.star_points[i][0] += self.xspeed
+                    self.star_points[i][1] += self.yspeed
+
+    def draw(self, screen):
+        pygame.draw.polygon(screen, self.color, self.star_points)
+
+    def re_start(self):
+        self.star_points  = [ (195-129, 171-120), (200-129, 120-120), (205-129, 171-120), (271-129, 174-120), (205-129, 179-120),
+                 (200-129, 236-120), (195-129, 179-120), (129-129, 174-120)]
+        self.move = 1
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -124,6 +156,9 @@ for i in range(80):
     x = random.randint(1, (width - 1) * 2)
     y = random.randint(1, (height - 1) * 2)
     stars.append(Star(x, y, xspeed, yspeed))
+bigStar = BigStar(xspeed, yspeed)
+
+timer_c = 0
 
 # set up the screen
 screen = pygame.display.set_mode((screen_size), pygame.NOFRAME)
@@ -147,7 +182,7 @@ if rank == 0:
     mixer.music.play()
 
 # this is a function that will run the red dot
-def run_it(stars):
+def run_it(stars, bigStar):
     #for star in stars:
     #calculate rectangle steps and dimensions
     #color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -181,6 +216,11 @@ def run_it(stars):
                 comm.bcast(star, root=0)
                 #thing.tell_me()
                 star.draw(screen, 0, 0)
+            bigStar.move()
+            comm.bcast(bigStar, root = 0)
+            bigStar.draw(screen)
+            if(timer_c == random.randint(10, 900)):
+                bigStar.re_start()
         elif rank == 1:
             screen.fill((0, 0, 0))
             screen.blit(bg_image2, (0, 0))
@@ -188,6 +228,8 @@ def run_it(stars):
                 star = comm.bcast(star, root=0)
                 #thing.tell_me()
                 star.draw(screen, width, 0)
+            comm.bcast(bigStar, root = 0)
+            bigStar.draw(screen)
         #    star.move()
         elif rank == 2:
             screen.fill((0, 0, 0))
@@ -195,6 +237,8 @@ def run_it(stars):
             for star in stars:
                 star = comm.bcast(star, root=0)
                 star.draw(screen, 0, height)
+            comm.bcast(bigStar, root = 0)
+            bigStar.draw(screen)
         #    star.move()
         else:      #rank == 3:
             screen.fill((0, 0, 0))
@@ -202,9 +246,14 @@ def run_it(stars):
             for star in stars:
                 star = comm.bcast(star, root=0)
                 star.draw(screen, width, height)
+            comm.bcast(bigStar, root = 0)
+            bigStar.draw(screen)
         #    star.move()
         pygame.display.update()
         clock.tick(60)
+        timer_c += 1
+        if(timer_c == 1000):
+            timer_c = 0
 
 while True:
-    run_it(stars)
+    run_it(stars, bigStar)
