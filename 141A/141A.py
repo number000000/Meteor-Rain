@@ -9,7 +9,7 @@ import time
 import random
 from mpi4py import MPI
 from pygame import mixer
-import pygame.freetype
+#import pygame.freetype
 
 # simple thing that can move around
 class Thing:
@@ -97,6 +97,8 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
+pygame.init()
+
 # set window position
 os.environ['SDL_VIDEO_WINDOW_POS'] = "0,0"
 # get this display
@@ -141,15 +143,17 @@ bg_image4 = pygame.transform.scale(bg_image4, (width, height))
 
 #music set up
 if rank == 0:
-    mixer.init()
-    mixer.music.load('skyMusic.mp3')
-    print("music started playing")
-    mixer.music.set_volume(0.2)
-    mixer.music.play()
+     mixer.init()
+     mixer.music.load('skyMusic.mp3')
+     print("music started playing")
+     mixer.music.set_volume(0.2)
+     mixer.music.play()
 
 #Text
-GAME_FONT = pygame.freetype.Font("moveon.ttf", 24)
-text_surface, rect = GAME_FONT.render('Meteor Rain', (255, 255, 255))
+#GAME_FONT = pygame.freetype.Font("moveon.ttf", 24)
+#text_surface, rect = GAME_FONT.render('Meteor Rain', (255, 255, 255))
+font = pygame.font.Font(None, 72)
+text1 = font.render("Meteor Rain by Meihui Liu", True, (255, 255, 255))
 
 # this is a function that will run the red dot
 def run_it(stars):
@@ -186,8 +190,8 @@ def run_it(stars):
                 comm.bcast(star, root=0)
                 #thing.tell_me()
                 star.draw(screen, 0, 0)
-            screen.blit(text_surface, (10,10))
-            GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
+            screen.blit(text1, (10,10))
+            #GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
         elif rank == 1:
             screen.fill((0, 0, 0))
             screen.blit(bg_image2, (0, 0))
@@ -195,24 +199,24 @@ def run_it(stars):
                 star = comm.bcast(star, root=0)
                 #thing.tell_me()
                 star.draw(screen, width, 0)
-            screen.blit(text_surface, (10,10))
-            GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
+            screen.blit(text1, (10 - width,10))
+            #GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
         elif rank == 2:
             screen.fill((0, 0, 0))
             screen.blit(bg_image3, (0, 0))
             for star in stars:
                 star = comm.bcast(star, root=0)
                 star.draw(screen, 0, height)
-            screen.blit(text_surface, (10,10))
-            GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
+            screen.blit(text1, (10,10 - height))
+            #GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
         else:      #rank == 3:
             screen.fill((0, 0, 0))
             screen.blit(bg_image4, (0, 0))
             for star in stars:
                 star = comm.bcast(star, root=0)
                 star.draw(screen, width, height)
-            screen.blit(text_surface, (10,10))
-            GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
+            screen.blit(text1, (10 - width,10 - height))
+            #GAME_FONT.render_to(screen, (10, 40), "by Meihui Liu", (255, 255, 255))
         pygame.display.update()
         clock.tick(60)
 
