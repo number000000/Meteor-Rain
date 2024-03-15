@@ -1,4 +1,5 @@
 # Meteor Rain
+meteor_rain.py is the main executable. Here is a demo of what it should generate after running it on a mpi cluster. \
 **Demo**
 
 |<img src="./img/1.gif" width="25%" height="25%">|<img src="./img/2.gif" width="25%" height="25%">|
