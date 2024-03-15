@@ -3,8 +3,8 @@ import random
 
 pygame.init()
 
-WIDTH = 600
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 750
 
 FPS = 60
 clock = pygame.time.Clock()
